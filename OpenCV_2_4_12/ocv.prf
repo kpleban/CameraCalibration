@@ -1,0 +1,60 @@
+# OpenCV 2.4.12
+
+OPENCV_VERSION = 2412
+OPENCV_MODULES = calib3d contrib core features2d flann gpu highgui imgproc legacy ml nonfree objdetect ocl photo stitching superres video videostab
+
+INCLUDEPATH += $$PWD/include
+DEPENDPATH += $$PWD/include
+
+defineReplace(OCV_ENVIRONMENT_PATH) {
+    unset(ENV_PATH)
+    contains(DEFINES,OCV_X64) {
+        ENV_PATH = x64
+    } else {
+        ENV_PATH = x86
+    }
+    return($$ENV_PATH)
+}
+
+defineReplace(OCV_BUILD_PATH) {
+    unset(BUILD_PATH)
+    contains(DEFINES,OCV_VC10) {
+        BUILD_PATH = vc10
+    } else:contains(DEFINES,OCV_VC11) {
+        BUILD_PATH = vc11
+    } else:contains(DEFINES,OCV_VC12) {
+        BUILD_PATH = vc12
+    } else {
+        BUILD_PATH = mingw
+    }
+    return($$BUILD_PATH)
+}
+
+defineReplace(OCV_ADDITIONAL) {
+    unset(ADDITIONAL)
+    contains(DEFINES,OCV_VC10) {
+    } else:contains(DEFINES,OCV_VC11) {
+    } else:contains(DEFINES,OCV_VC12) {
+    } else {
+        ADDITIONAL = .dll
+    }
+    return ($$ADDITIONAL)
+}
+
+LIBS += -L$$PWD/$${OCV_ENVIRONMENT_PATH()}/$${OCV_BUILD_PATH()}/lib \
+
+CONFIG(debug, debug|release){
+    for(module, OPENCV_MODULES) {
+        LIBS += -lopencv_$${module}$${OPENCV_VERSION}d$${OCV_ADDITIONAL()}
+    }
+    LIBS += -lopencv_ts$${OPENCV_VERSION}d
+}
+
+CONFIG(release, debug|release){
+    for(module, OPENCV_MODULES) {
+        LIBS += -lopencv_$${module}$${OPENCV_VERSION}$${OCV_ADDITIONAL()}
+    }
+    LIBS += -lopencv_ts$${OPENCV_VERSION}
+}
+
+DEFINES += OCV_INCLUDED
